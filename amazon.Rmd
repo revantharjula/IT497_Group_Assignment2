@@ -1,0 +1,308 @@
+Twitter Sentiment Analysis for Amazon
+========================================================
+
+<h4>Author: Anand Kalukuri </h4>
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+library("twitteR")
+library("wordcloud")
+library("tm")
+library("ggplot2")
+library("reshape2")
+```
+
+```{r,echo=FALSE,eval=FALSE}
+anand.key <-"lVsuI68kkt5f4b6gPHM0XoR6d"
+anand.secret <-"qMr45BQrpoWlBiijJlhUCKFLZXkDqqYAiwlmEu30bDeAeU1TyR"
+
+cred <- OAuthFactory$new(consumerKey=anand.key,
+                         consumerSecret=anand.secret,
+                         requestURL='https://api.twitter.com/oauth/request_token',
+                         accessURL='https://api.twitter.com/oauth/access_token',
+                         authURL= 'https://api.twitter.com/oauth/authorize')
+
+## save the credentials to your local drive
+## on future uses of the script you'll only need to load the .Rdata
+## file and won't have to re-authorize your account.
+
+save(cred, file="twitter_authentication.Rdata")
+
+
+## load("twitter_authentication.Rdata")
+cred$handshake()
+
+## check that authorization was successful
+
+registerTwitterOAuth(cred)
+
+## tweets <- searchTwitter("@Boeing",n=500)
+
+tweets.day1.amazon <- searchTwitter("@amazon",n=200, lang="en", since='2014-12-1', until='2014-12-2')
+
+tweets.day2.amazon <- searchTwitter("@amazon",n=200, lang="en", since='2014-12-2', until='2014-12-3')
+
+tweets.day3.amazon <- searchTwitter("@amazon",n=200, lang="en", since='2014-12-3', until='2014-12-4')
+
+tweets.day4.amazon <- searchTwitter("@amazon",n=200, lang="en", since='2014-12-4', until='2014-12-5')
+
+tweets.day5.amazon <- searchTwitter("@amazon",n=200, lang="en", since='2014-12-5', until='2014-12-6')
+
+## Now, we will extract the fields that we want
+
+tweets.day1.amazon.id <- sapply(tweets.day1.amazon, function(x) x$getId())
+tweets.day1.amazon.text <- sapply(tweets.day1.amazon, function(x) x$getText())
+tweets.day1.amazon.screenname <- sapply(tweets.day1.amazon, function(x) x$getScreenName())
+tweets.day1.amazon.isretweet <- sapply(tweets.day1.amazon, function(x) x$getIsRetweet())
+tweets.day1.amazon.retweeted <- sapply(tweets.day1.amazon, function(x) x$getRetweeted())
+tweets.day1.amazon.created <- sapply(tweets.day1.amazon, function(x) x$getCreated())
+
+
+tweets.day2.amazon.id <- sapply(tweets.day2.amazon, function(x) x$getId())
+tweets.day2.amazon.text <- sapply(tweets.day2.amazon, function(x) x$getText())
+tweets.day2.amazon.screenname <- sapply(tweets.day2.amazon, function(x) x$getScreenName())
+tweets.day2.amazon.isretweet <- sapply(tweets.day2.amazon, function(x) x$getIsRetweet())
+tweets.day2.amazon.retweeted <- sapply(tweets.day2.amazon, function(x) x$getRetweeted())
+tweets.day2.amazon.created <- sapply(tweets.day2.amazon, function(x) x$getCreated())
+
+
+tweets.day3.amazon.id <- sapply(tweets.day3.amazon, function(x) x$getId())
+tweets.day3.amazon.text <- sapply(tweets.day3.amazon, function(x) x$getText())
+tweets.day3.amazon.screenname <- sapply(tweets.day3.amazon, function(x) x$getScreenName())
+tweets.day3.amazon.isretweet <- sapply(tweets.day3.amazon, function(x) x$getIsRetweet())
+tweets.day3.amazon.retweeted <- sapply(tweets.day3.amazon, function(x) x$getRetweeted())
+tweets.day3.amazon.created <- sapply(tweets.day3.amazon, function(x) x$getCreated())
+
+
+tweets.day4.amazon.id <- sapply(tweets.day4.amazon, function(x) x$getId())
+tweets.day4.amazon.text <- sapply(tweets.day4.amazon, function(x) x$getText())
+tweets.day4.amazon.screenname <- sapply(tweets.day4.amazon, function(x) x$getScreenName())
+tweets.day4.amazon.isretweet <- sapply(tweets.day4.amazon, function(x) x$getIsRetweet())
+tweets.day4.amazon.retweeted <- sapply(tweets.day4.amazon, function(x) x$getRetweeted())
+tweets.day4.amazon.created <- sapply(tweets.day4.amazon, function(x) x$getCreated())
+
+
+tweets.day5.amazon.id <- sapply(tweets.day5.amazon, function(x) x$getId())
+tweets.day5.amazon.text <- sapply(tweets.day5.amazon, function(x) x$getText())
+tweets.day5.amazon.screenname <- sapply(tweets.day5.amazon, function(x) x$getScreenName())
+tweets.day5.amazon.isretweet <- sapply(tweets.day5.amazon, function(x) x$getIsRetweet())
+tweets.day5.amazon.retweeted <- sapply(tweets.day5.amazon, function(x) x$getRetweeted())
+tweets.day5.amazon.created <- sapply(tweets.day5.amazon, function(x) x$getCreated())
+
+head(tweets.day5.amazon.text)
+
+## Write data to file
+
+df.day1.amazon <- data.frame(tweets.day1.amazon.id, tweets.day1.amazon.text, tweets.day1.amazon.screenname, tweets.day1.amazon.isretweet, 
+                            tweets.day1.amazon.retweeted, tweets.day1.amazon.created)
+names(df.day1.amazon) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day1.amazon, file = "amazon_day1.txt", append = TRUE)
+
+
+df.day2.amazon <- data.frame(tweets.day2.amazon.id, tweets.day2.amazon.text, tweets.day2.amazon.screenname,
+                            tweets.day2.amazon.isretweet,tweets.day2.amazon.retweeted, 
+                            tweets.day2.amazon.created)
+names(df.day2.amazon) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day2.amazon, file = "amazon_day2.txt", append = TRUE)
+
+
+
+df.day3.amazon <- data.frame(tweets.day3.amazon.id, tweets.day3.amazon.text, tweets.day3.amazon.screenname, 
+                            tweets.day3.amazon.isretweet, tweets.day3.amazon.retweeted, 
+                            tweets.day3.amazon.created)
+names(df.day3.amazon) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day3.amazon, file = "amazon_day3.txt", append = TRUE)
+
+
+df.day4.amazon <- data.frame(tweets.day4.amazon.id, tweets.day4.amazon.text, tweets.day4.amazon.screenname,
+                            tweets.day4.amazon.isretweet, tweets.day4.amazon.retweeted, 
+                            tweets.day4.amazon.created)
+names(df.day4.amazon) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day4.amazon, file = "amazon_day4.txt", append = TRUE)
+
+
+df.day5.amazon <- data.frame(tweets.day5.amazon.id, tweets.day5.amazon.text, tweets.day5.amazon.screenname,
+                            tweets.day5.amazon.isretweet,tweets.day5.amazon.retweeted, 
+                            tweets.day5.amazon.created)
+names(df.day5.amazon) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day5.amazon, file = "amazon_day5.txt", append = TRUE)
+
+## these are the files from ReggieNet
+##load opinion lexicon
+##from http://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html#lexicon
+## the load path is relative to the working directory that is set above
+
+pos <- scan("positive-words.txt",what="character",comment.char=";")
+neg <- scan("negative-words.txt",what="character",comment.char=";")
+
+## create corpus
+## these functions from the tm package
+
+tweets.day1.amazon.corpus <- Corpus(VectorSource(tweets.day1.amazon.text))
+tweets.day2.amazon.corpus <- Corpus(VectorSource(tweets.day2.amazon.text))
+tweets.day3.amazon.corpus <- Corpus(VectorSource(tweets.day3.amazon.text))
+tweets.day4.amazon.corpus <- Corpus(VectorSource(tweets.day4.amazon.text))
+tweets.day5.amazon.corpus <- Corpus(VectorSource(tweets.day5.amazon.text))
+
+
+## clean up
+
+tweets.day1.amazon.corpus <- tm_map(tweets.day1.amazon.corpus, tolower) 
+tweets.day1.amazon.corpus <- tm_map(tweets.day1.amazon.corpus, removePunctuation)
+tweets.day1.amazon.corpus <- tm_map(tweets.day1.amazon.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day2.amazon.corpus <- tm_map(tweets.day2.amazon.corpus, tolower) 
+tweets.day2.amazon.corpus <- tm_map(tweets.day2.amazon.corpus, removePunctuation)
+tweets.day2.amazon.corpus <- tm_map(tweets.day2.amazon.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day3.amazon.corpus <- tm_map(tweets.day3.amazon.corpus, tolower) 
+tweets.day3.amazon.corpus <- tm_map(tweets.day3.amazon.corpus, removePunctuation)
+tweets.day3.amazon.corpus <- tm_map(tweets.day3.amazon.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day4.amazon.corpus <- tm_map(tweets.day4.amazon.corpus, tolower) 
+tweets.day4.amazon.corpus <- tm_map(tweets.day4.amazon.corpus, removePunctuation)
+tweets.day4.amazon.corpus <- tm_map(tweets.day4.amazon.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day5.amazon.corpus <- tm_map(tweets.day5.amazon.corpus, tolower) 
+tweets.day5.amazon.corpus <- tm_map(tweets.day5.amazon.corpus, removePunctuation)
+tweets.day5.amazon.corpus <- tm_map(tweets.day5.amazon.corpus, function(x) removeWords(x,stopwords()))
+
+corpus.split.day1 <- lapply(tweets.day1.amazon.corpus,strsplit,"\\s+")
+corpus.split.day2 <- lapply(tweets.day2.amazon.corpus,strsplit,"\\s+")
+corpus.split.day3 <- lapply(tweets.day3.amazon.corpus,strsplit,"\\s+")
+corpus.split.day4 <- lapply(tweets.day4.amazon.corpus,strsplit,"\\s+")
+corpus.split.day5 <- lapply(tweets.day5.amazon.corpus,strsplit,"\\s+")
+
+## find matches for the individual words in the two lexicons
+## lapply again, x takes on an element in the corpus
+## at each iteration
+
+matches.day1 <- lapply(corpus.split.day1,function(x) {
+  match.pos.day1 <- match(x[[1]],pos)
+  match.neg.day1 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day1))),length(which(!is.na(match.neg.day1))))
+})
+
+matches.day2 <- lapply(corpus.split.day2,function(x) {
+  match.pos.day2 <- match(x[[1]],pos)
+  match.neg.day2 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day2))),length(which(!is.na(match.neg.day2))))
+})
+
+matches.day3 <- lapply(corpus.split.day1,function(x) {
+  match.pos.day3 <- match(x[[1]],pos)
+  match.neg.day3 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day3))),length(which(!is.na(match.neg.day3))))
+})
+
+matches.day4 <- lapply(corpus.split.day4,function(x) {
+  match.pos.day4 <- match(x[[1]],pos)
+  match.neg.day4 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day4))),length(which(!is.na(match.neg.day4))))
+})
+
+matches.day5 <- lapply(corpus.split.day5,function(x) {
+  match.pos.day5 <- match(x[[1]],pos)
+  match.neg.day5 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day5))),length(which(!is.na(match.neg.day5))))
+})
+
+## turn the matches into a matrix
+## one column for positive, one for negative
+
+match.matrix.day1 <- matrix(unlist(matches.day1),nrow=length(matches.day1),ncol=2,byrow=T)
+match.matrix.day2 <- matrix(unlist(matches.day2),nrow=length(matches.day2),ncol=2,byrow=T)
+match.matrix.day3 <- matrix(unlist(matches.day3),nrow=length(matches.day3),ncol=2,byrow=T)
+match.matrix.day4 <- matrix(unlist(matches.day4),nrow=length(matches.day4),ncol=2,byrow=T)
+match.matrix.day5 <- matrix(unlist(matches.day5),nrow=length(matches.day5),ncol=2,byrow=T)
+
+## calculate a simple sentiment score by substracting
+## positive count from negative count
+
+simple.sentiment.day1 <- match.matrix.day1[,1] - match.matrix.day1[,2]
+simple.sentiment.day2 <- match.matrix.day2[,1] - match.matrix.day2[,2]
+simple.sentiment.day3 <- match.matrix.day3[,1] - match.matrix.day3[,2]
+simple.sentiment.day4 <- match.matrix.day4[,1] - match.matrix.day4[,2]
+simple.sentiment.day5 <- match.matrix.day5[,1] - match.matrix.day5[,2]
+
+## histogram of sentiment
+hist(simple.sentiment.day1)
+hist(simple.sentiment.day2)
+hist(simple.sentiment.day3)
+hist(simple.sentiment.day4)
+hist(simple.sentiment.day5)
+
+sum(simple.sentiment.day1)
+sum(simple.sentiment.day2)
+sum(simple.sentiment.day3)
+sum(simple.sentiment.day4)
+sum(simple.sentiment.day5)
+
+```
+<h2>Number of tweets</h2>
+
+Total number of tweets recorded per day is 200.
+
+<h2>Sentiment Histograph for each day</h2>
+
+<b>Day1</b> 
+
+Below is the sentiment histograoh for the day 1: 12-01-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/amazonday1.png)
+
+<b>Day2</b> 
+
+Below is the sentiment histograoh for the day 2: 12-02-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/amazonday2.png)
+
+<b>Day3</b> 
+
+Below is the sentiment histograoh for the day 3: 12-03-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/amazonday3.png)
+
+<b>Day4</b> 
+
+Below is the sentiment histograoh for the day 4: 12-04-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/amazonday4.png)
+
+<b>Day5</b> 
+
+Below is the sentiment histograoh for the day 5: 12-05-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/amazonday5.png)
+
+<h2> Comparison Graph </h2>
+
+```{r eval=TRUE,echo=FALSE,message=FALSE,fig.width=12}
+df <- read.csv("amazon.csv")
+
+df1 <- melt(df, id.vars="Dates")
+
+ggplot(data=df1, aes(x=Dates, y=value, fill=variable)) + geom_bar(stat="identity", position=position_dodge(), colour="black")
+
+df
+```
+
+     In this file, first we are extracting the data from twitter and calculating the sentiment analysis with the actual stock behavior to verify if sentiment analysis predicts the stock change accordingly. We totally have 7 attributes created for calculating the sentiment analysis in order to predict the stock fluctuations, each of them are explained in detail below.
+  
+     5 of them are histographs containing sentiment analysis data for each day starting from December 1st 2014 to December 5th 2014, 1 table which explains the sum of sentiments for each day and the Stock price change for that respective day(The stock price change values have been calculated as the daily stock price change * 100). 
+     
+     The bar graph plotted against the sentiment analysis collected and actual stock price change in the market. The graph has plotted all five days stock ups and downs against all 5 days sentiment analysis results side by side helping us judge the sentiment analysis prediction. From the graph we can see that the predictions were wrong for the first day as the sentiment results were positive indicating a rise in the stock price, whereas the stock has dropped originally which indicates the predictions are wrong but sentiment analysis predictions for the second day were right where the results showed that there will be a rise in the stock price and there was actually rise in the market for amazon. And for similarly for day 3 , day 4 , day 5 , predictions were negative, positive, negative, respectively. 
+     
+     Thus we can conclude that we cannot counting on the predictions of sentiment analysis doesn’t work all the time as the results are inconsistent.
+
+     
+  

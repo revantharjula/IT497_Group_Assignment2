@@ -1,0 +1,277 @@
+Twitter Sentiment Analysis for Citrix
+========================================================
+
+<h4>Author: Sahitya Atchyutuni </h4>
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+library("twitteR")
+library("wordcloud")
+library("tm")
+library("ggplot2")
+library("reshape2")
+```
+
+```{r,echo=FALSE,eval=FALSE}
+sai.key <-"tqd26vRnsP8cXfa6YszVYXstP"
+sai.secret <-"xiodES1NkqEryLZOT8JMtwtaijM2i6xtHayDKUubrBDSJCAj22"
+
+cred <- OAuthFactory$new(consumerKey=sai.key,
+                         consumerSecret=sai.secret,
+                         requestURL='https://api.twitter.com/oauth/request_token',
+                         accessURL='https://api.twitter.com/oauth/access_token',
+                         authURL= 'https://api.twitter.com/oauth/authorize')
+
+save(cred, file="twitter_authentication.Rdata")
+
+cred$handshake()
+
+## check that authorization was successful
+
+registerTwitterOAuth(cred)
+
+tweets.day1.citrix <- searchTwitter("@citrix",n=200, lang="en", since='2014-12-1', until='2014-12-2')
+
+tweets.day2.citrix <- searchTwitter("@citrix",n=200, lang="en", since='2014-12-2', until='2014-12-3')
+
+tweets.day3.citrix <- searchTwitter("@citrix",n=200, lang="en", since='2014-12-3', until='2014-12-4')
+
+tweets.day4.citrix <- searchTwitter("@citrix",n=200, lang="en", since='2014-12-4', until='2014-12-5')
+
+tweets.day5.citrix <- searchTwitter("@citrix",n=200, lang="en", since='2014-12-5', until='2014-12-6')
+
+tweets.day1.citrix.id <- sapply(tweets.day1.citrix, function(x) x$getId())
+tweets.day1.citrix.text <- sapply(tweets.day1.citrix, function(x) x$getText())
+tweets.day1.citrix.screenname <- sapply(tweets.day1.citrix, function(x) x$getScreenName())
+tweets.day1.citrix.isretweet <- sapply(tweets.day1.citrix, function(x) x$getIsRetweet())
+tweets.day1.citrix.retweeted <- sapply(tweets.day1.citrix, function(x) x$getRetweeted())
+tweets.day1.citrix.created <- sapply(tweets.day1.citrix, function(x) x$getCreated())
+
+
+tweets.day2.citrix.id <- sapply(tweets.day2.citrix, function(x) x$getId())
+tweets.day2.citrix.text <- sapply(tweets.day2.citrix, function(x) x$getText())
+tweets.day2.citrix.screenname <- sapply(tweets.day2.citrix, function(x) x$getScreenName())
+tweets.day2.citrix.isretweet <- sapply(tweets.day2.citrix, function(x) x$getIsRetweet())
+tweets.day2.citrix.retweeted <- sapply(tweets.day2.citrix, function(x) x$getRetweeted())
+tweets.day2.citrix.created <- sapply(tweets.day2.citrix, function(x) x$getCreated())
+
+
+tweets.day3.citrix.id <- sapply(tweets.day3.citrix, function(x) x$getId())
+tweets.day3.citrix.text <- sapply(tweets.day3.citrix, function(x) x$getText())
+tweets.day3.citrix.screenname <- sapply(tweets.day3.citrix, function(x) x$getScreenName())
+tweets.day3.citrix.isretweet <- sapply(tweets.day3.citrix, function(x) x$getIsRetweet())
+tweets.day3.citrix.retweeted <- sapply(tweets.day3.citrix, function(x) x$getRetweeted())
+tweets.day3.citrix.created <- sapply(tweets.day3.citrix, function(x) x$getCreated())
+
+
+tweets.day4.citrix.id <- sapply(tweets.day4.citrix, function(x) x$getId())
+tweets.day4.citrix.text <- sapply(tweets.day4.citrix, function(x) x$getText())
+tweets.day4.citrix.screenname <- sapply(tweets.day4.citrix, function(x) x$getScreenName())
+tweets.day4.citrix.isretweet <- sapply(tweets.day4.citrix, function(x) x$getIsRetweet())
+tweets.day4.citrix.retweeted <- sapply(tweets.day4.citrix, function(x) x$getRetweeted())
+tweets.day4.citrix.created <- sapply(tweets.day4.citrix, function(x) x$getCreated())
+
+
+tweets.day5.citrix.id <- sapply(tweets.day5.citrix, function(x) x$getId())
+tweets.day5.citrix.text <- sapply(tweets.day5.citrix, function(x) x$getText())
+tweets.day5.citrix.screenname <- sapply(tweets.day5.citrix, function(x) x$getScreenName())
+tweets.day5.citrix.isretweet <- sapply(tweets.day5.citrix, function(x) x$getIsRetweet())
+tweets.day5.citrix.retweeted <- sapply(tweets.day5.citrix, function(x) x$getRetweeted())
+tweets.day5.citrix.created <- sapply(tweets.day5.citrix, function(x) x$getCreated())
+
+head(tweets.day5.citrix.text)
+
+## Write data to file
+
+df.day1.citrix <- data.frame(tweets.day1.citrix.id, tweets.day1.citrix.text, tweets.day1.citrix.screenname, tweets.day1.citrix.isretweet, 
+                           tweets.day1.citrix.retweeted, tweets.day1.citrix.created)
+names(df.day1.citrix) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day1.citrix, file = "citrix_day1.txt", append = TRUE)
+
+
+df.day2.citrix <- data.frame(tweets.day2.citrix.id, tweets.day2.citrix.text, tweets.day2.citrix.screenname,
+                           tweets.day2.citrix.isretweet,tweets.day2.citrix.retweeted, 
+                           tweets.day2.citrix.created)
+names(df.day2.citrix) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day2.citrix, file = "citrix_day2.txt", append = TRUE)
+
+
+
+df.day3.citrix <- data.frame(tweets.day3.citrix.id, tweets.day3.citrix.text, tweets.day3.citrix.screenname, 
+                           tweets.day3.citrix.isretweet, tweets.day3.citrix.retweeted, 
+                           tweets.day3.citrix.created)
+names(df.day3.citrix) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day3.citrix, file = "citrix_day3.txt", append = TRUE)
+
+
+df.day4.citrix <- data.frame(tweets.day4.citrix.id, tweets.day4.citrix.text, tweets.day4.citrix.screenname,
+                           tweets.day4.citrix.isretweet, tweets.day4.citrix.retweeted, 
+                           tweets.day4.citrix.created)
+names(df.day4.citrix) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day4.citrix, file = "citrix_day4.txt", append = TRUE)
+
+
+df.day5.citrix <- data.frame(tweets.day5.citrix.id, tweets.day5.citrix.text, tweets.day5.citrix.screenname,
+                           tweets.day5.citrix.isretweet,tweets.day5.citrix.retweeted, 
+                           tweets.day5.citrix.created)
+names(df.day5.citrix) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day5.citrix, file = "citrix_day5.txt", append = TRUE)
+
+
+pos <- scan("positive-words.txt",what="character",comment.char=";")
+neg <- scan("negative-words.txt",what="character",comment.char=";")
+
+## create corpus
+## these functions from the tm package
+
+tweets.day1.citrix.corpus <- Corpus(VectorSource(tweets.day1.citrix.text))
+tweets.day2.citrix.corpus <- Corpus(VectorSource(tweets.day2.citrix.text))
+tweets.day3.citrix.corpus <- Corpus(VectorSource(tweets.day3.citrix.text))
+tweets.day4.citrix.corpus <- Corpus(VectorSource(tweets.day4.citrix.text))
+tweets.day5.citrix.corpus <- Corpus(VectorSource(tweets.day5.citrix.text))
+
+
+## clean up
+
+tweets.day1.citrix.corpus <- tm_map(tweets.day1.citrix.corpus, tolower) 
+tweets.day1.citrix.corpus <- tm_map(tweets.day1.citrix.corpus, removePunctuation)
+tweets.day1.citrix.corpus <- tm_map(tweets.day1.citrix.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day2.citrix.corpus <- tm_map(tweets.day2.citrix.corpus, tolower) 
+tweets.day2.citrix.corpus <- tm_map(tweets.day2.citrix.corpus, removePunctuation)
+tweets.day2.citrix.corpus <- tm_map(tweets.day2.citrix.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day3.citrix.corpus <- tm_map(tweets.day3.citrix.corpus, tolower) 
+tweets.day3.citrix.corpus <- tm_map(tweets.day3.citrix.corpus, removePunctuation)
+tweets.day3.citrix.corpus <- tm_map(tweets.day3.citrix.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day4.citrix.corpus <- tm_map(tweets.day4.citrix.corpus, tolower) 
+tweets.day4.citrix.corpus <- tm_map(tweets.day4.citrix.corpus, removePunctuation)
+tweets.day4.citrix.corpus <- tm_map(tweets.day4.citrix.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day5.citrix.corpus <- tm_map(tweets.day5.citrix.corpus, tolower) 
+tweets.day5.citrix.corpus <- tm_map(tweets.day5.citrix.corpus, removePunctuation)
+tweets.day5.citrix.corpus <- tm_map(tweets.day5.citrix.corpus, function(x) removeWords(x,stopwords()))
+
+
+corpus.split.day1 <- lapply(tweets.day1.citrix.corpus,strsplit,"\\s+")
+corpus.split.day2 <- lapply(tweets.day2.citrix.corpus,strsplit,"\\s+")
+corpus.split.day3 <- lapply(tweets.day3.citrix.corpus,strsplit,"\\s+")
+corpus.split.day4 <- lapply(tweets.day4.citrix.corpus,strsplit,"\\s+")
+corpus.split.day5 <- lapply(tweets.day5.citrix.corpus,strsplit,"\\s+")
+
+matches.day1 <- lapply(corpus.split.day1,function(x) {
+  match.pos.day1 <- match(x[[1]],pos)
+  match.neg.day1 <- match(x[[1]],neg) 
+  list(length(which(!is.na(match.pos.day1))),length(which(!is.na(match.neg.day1))))
+})
+
+matches.day2 <- lapply(corpus.split.day2,function(x) {
+  match.pos.day2 <- match(x[[1]],pos)
+  match.neg.day2 <- match(x[[1]],neg) 
+  list(length(which(!is.na(match.pos.day2))),length(which(!is.na(match.neg.day2))))
+})
+
+matches.day3 <- lapply(corpus.split.day1,function(x) {
+  match.pos.day3 <- match(x[[1]],pos)
+  match.neg.day3 <- match(x[[1]],neg) 
+  list(length(which(!is.na(match.pos.day3))),length(which(!is.na(match.neg.day3))))
+})
+
+matches.day4 <- lapply(corpus.split.day4,function(x) {
+  match.pos.day4 <- match(x[[1]],pos)
+  match.neg.day4 <- match(x[[1]],neg) 
+  list(length(which(!is.na(match.pos.day4))),length(which(!is.na(match.neg.day4))))
+})
+
+matches.day5 <- lapply(corpus.split.day5,function(x) {
+  match.pos.day5 <- match(x[[1]],pos)
+  match.neg.day5 <- match(x[[1]],neg) 
+  list(length(which(!is.na(match.pos.day5))),length(which(!is.na(match.neg.day5))))
+})
+
+## turn the matches into a matrix
+## one column for positive, one for negative
+
+match.matrix.day1 <- matrix(unlist(matches.day1),nrow=length(matches.day1),ncol=2,byrow=T)
+match.matrix.day2 <- matrix(unlist(matches.day2),nrow=length(matches.day2),ncol=2,byrow=T)
+match.matrix.day3 <- matrix(unlist(matches.day3),nrow=length(matches.day3),ncol=2,byrow=T)
+match.matrix.day4 <- matrix(unlist(matches.day4),nrow=length(matches.day4),ncol=2,byrow=T)
+match.matrix.day5 <- matrix(unlist(matches.day5),nrow=length(matches.day5),ncol=2,byrow=T)
+
+simple.sentiment.day1 <- match.matrix.day1[,1] - match.matrix.day1[,2]
+simple.sentiment.day2 <- match.matrix.day2[,1] - match.matrix.day2[,2]
+simple.sentiment.day3 <- match.matrix.day3[,1] - match.matrix.day3[,2]
+simple.sentiment.day4 <- match.matrix.day4[,1] - match.matrix.day4[,2]
+simple.sentiment.day5 <- match.matrix.day5[,1] - match.matrix.day5[,2]
+
+## histogram of sentiment
+hist(simple.sentiment.day1)
+hist(simple.sentiment.day2)
+hist(simple.sentiment.day3)
+hist(simple.sentiment.day4)
+hist(simple.sentiment.day5)
+
+sum(simple.sentiment.day1)
+sum(simple.sentiment.day2)
+sum(simple.sentiment.day3)
+sum(simple.sentiment.day4)
+sum(simple.sentiment.day5)
+```
+
+<h2>Number of tweets</h2>
+
+Total number of tweets recorded per day is 200.
+
+<h2>Sentiment Histograph for each day</h2>
+
+<b>Day1</b> 
+
+Below is the sentiment histograoh for the day 1: 12-01-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/citrixday1.png)
+
+<b>Day2</b> 
+
+Below is the sentiment histograoh for the day 2: 12-02-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/citrixday2.png)
+
+<b>Day3</b> 
+
+Below is the sentiment histograoh for the day 3: 12-03-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/citrixday3.png)
+
+<b>Day4</b> 
+
+Below is the sentiment histograoh for the day 4: 12-04-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/citrixday4.png)
+
+<b>Day5</b> 
+
+Below is the sentiment histograoh for the day 5: 12-05-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/citrixday5.png)
+
+<h2> Comparison Graph </h2>
+
+```{r eval=TRUE,echo=FALSE,message=FALSE,fig.width=12}
+df <- read.csv("citrix.csv")
+
+df1 <- melt(df, id.vars="Dates")
+
+ggplot(data=df1, aes(x=Dates, y=value, fill=variable)) + geom_bar(stat="identity", position=position_dodge(), colour="black")
+
+df
+```
+
+     In this assignment we are preparing sentiment analysis results to predict the stock price of the company citrix, such that we can compare the stock price against our sentiment analysis which might be useful for buying stock of that company what we typically did in this assignment is that we have collected data from twitter (tweets) using our R markdown code.
+      
+   For this task to be completed we have created 5 Histograms as shown above, each showing a detailed daily sentiment analysis starting from December 1st to December 5th, we have collected 5 days data to understand the behavior of sentiment analysis and the we have created a table which shows the data for the sum of sentiments for each day and the Stock price change for that respective day. The stock price change values have been calculated as the daily stock price change * 100.
+   
+  We have also created a bar graph which captures the details of current stock value and the stock value predicted by sentiment analysis, side by side. This graph helps us to evaluate the results generated by sentiment analysis, In the above bar graph the sentiment analysis is correct for day2, day4, and day5 i.e. sentiment analysis predicted the stock quote will rise on all the three days interestingly it has predicted correctly for all three days which gives an impression that we can trust sentiment analysis for predicting the stock changes. But for day1 and day3 the prediction has failed, that is sentiment analysis indicated that there will be rise in the stock price on day1 but in reality the stock went underneath the previous day's stock price same is the case on day3. For 5 arbitrations we can see only 3 correct predictions correct, making us trust sentiment analysis only up to 60 percent. Thus, we can complete that we cannot trust the sentiment analysis 100 percent.
+
+
+
+      

@@ -1,0 +1,310 @@
+Twitter Sentiment Analysis for Ebay
+========================================================
+
+<h4>Author: Revanth Reddy Arjula </h4>
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+library("twitteR")
+library("wordcloud")
+library("tm")
+library("ggplot2")
+library("reshape2")
+```
+
+```{r,echo=FALSE,eval=FALSE}
+rev.key <-"XPVJCjNEUtZcEROPAudTVusCX"
+rev.secret <-"qiRZ9PBpHLl8gzayEp3gy5Jowykln8CLj0MxA7K7wvQRzgk9A3"
+
+cred <- OAuthFactory$new(consumerKey=rev.key,
+                         consumerSecret=rev.secret,
+                         requestURL='https://api.twitter.com/oauth/request_token',
+                         accessURL='https://api.twitter.com/oauth/access_token',
+                         authURL= 'https://api.twitter.com/oauth/authorize')
+
+## save the credentials to your local drive
+## on future uses of the script you'll only need to load the .Rdata
+## file and won't have to re-authorize your account.
+
+save(cred, file="twitter_authentication.Rdata")
+
+
+## load("twitter_authentication.Rdata")
+cred$handshake()
+
+## check that authorization was successful
+
+registerTwitterOAuth(cred)
+
+## tweets <- searchTwitter("@Boeing",n=500)
+
+tweets.day1.ebay <- searchTwitter("@eBay",n=200, lang="en", since='2014-12-1', until='2014-12-2')
+
+tweets.day2.ebay <- searchTwitter("@eBay",n=200, lang="en", since='2014-12-2', until='2014-12-3')
+
+tweets.day3.ebay <- searchTwitter("@eBay",n=200, lang="en", since='2014-12-3', until='2014-12-4')
+
+tweets.day4.ebay <- searchTwitter("@eBay",n=200, lang="en", since='2014-12-4', until='2014-12-5')
+
+tweets.day5.ebay <- searchTwitter("@eBay",n=200, lang="en", since='2014-12-5', until='2014-12-6')
+
+tweets.day1.ebay.id <- sapply(tweets.day1.ebay, function(x) x$getId())
+tweets.day1.ebay.text <- sapply(tweets.day1.ebay, function(x) x$getText())
+tweets.day1.ebay.screenname <- sapply(tweets.day1.ebay, function(x) x$getScreenName())
+tweets.day1.ebay.isretweet <- sapply(tweets.day1.ebay, function(x) x$getIsRetweet())
+tweets.day1.ebay.retweeted <- sapply(tweets.day1.ebay, function(x) x$getRetweeted())
+tweets.day1.ebay.created <- sapply(tweets.day1.ebay, function(x) x$getCreated())
+
+
+tweets.day2.ebay.id <- sapply(tweets.day2.ebay, function(x) x$getId())
+tweets.day2.ebay.text <- sapply(tweets.day2.ebay, function(x) x$getText())
+tweets.day2.ebay.screenname <- sapply(tweets.day2.ebay, function(x) x$getScreenName())
+tweets.day2.ebay.isretweet <- sapply(tweets.day2.ebay, function(x) x$getIsRetweet())
+tweets.day2.ebay.retweeted <- sapply(tweets.day2.ebay, function(x) x$getRetweeted())
+tweets.day2.ebay.created <- sapply(tweets.day2.ebay, function(x) x$getCreated())
+
+
+tweets.day3.ebay.id <- sapply(tweets.day3.ebay, function(x) x$getId())
+tweets.day3.ebay.text <- sapply(tweets.day3.ebay, function(x) x$getText())
+tweets.day3.ebay.screenname <- sapply(tweets.day3.ebay, function(x) x$getScreenName())
+tweets.day3.ebay.isretweet <- sapply(tweets.day3.ebay, function(x) x$getIsRetweet())
+tweets.day3.ebay.retweeted <- sapply(tweets.day3.ebay, function(x) x$getRetweeted())
+tweets.day3.ebay.created <- sapply(tweets.day3.ebay, function(x) x$getCreated())
+
+
+tweets.day4.ebay.id <- sapply(tweets.day4.ebay, function(x) x$getId())
+tweets.day4.ebay.text <- sapply(tweets.day4.ebay, function(x) x$getText())
+tweets.day4.ebay.screenname <- sapply(tweets.day4.ebay, function(x) x$getScreenName())
+tweets.day4.ebay.isretweet <- sapply(tweets.day4.ebay, function(x) x$getIsRetweet())
+tweets.day4.ebay.retweeted <- sapply(tweets.day4.ebay, function(x) x$getRetweeted())
+tweets.day4.ebay.created <- sapply(tweets.day4.ebay, function(x) x$getCreated())
+
+
+tweets.day5.ebay.id <- sapply(tweets.day5.ebay, function(x) x$getId())
+tweets.day5.ebay.text <- sapply(tweets.day5.ebay, function(x) x$getText())
+tweets.day5.ebay.screenname <- sapply(tweets.day5.ebay, function(x) x$getScreenName())
+tweets.day5.ebay.isretweet <- sapply(tweets.day5.ebay, function(x) x$getIsRetweet())
+tweets.day5.ebay.retweeted <- sapply(tweets.day5.ebay, function(x) x$getRetweeted())
+tweets.day5.ebay.created <- sapply(tweets.day5.ebay, function(x) x$getCreated())
+
+head(tweets.day5.ebay.text)
+
+## Write data to file
+
+df.day1.ebay <- data.frame(tweets.day1.ebay.id, tweets.day1.ebay.text, tweets.day1.ebay.screenname, tweets.day1.ebay.isretweet, 
+                             tweets.day1.ebay.retweeted, tweets.day1.ebay.created)
+names(df.day1.ebay) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day1.ebay, file = "ebay_day1.txt", append = TRUE)
+
+
+df.day2.ebay <- data.frame(tweets.day2.ebay.id, tweets.day2.ebay.text, tweets.day2.ebay.screenname,
+                             tweets.day2.ebay.isretweet,tweets.day2.ebay.retweeted, 
+                             tweets.day2.ebay.created)
+names(df.day2.ebay) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day2.ebay, file = "ebay_day2.txt", append = TRUE)
+
+
+
+df.day3.ebay <- data.frame(tweets.day3.ebay.id, tweets.day3.ebay.text, tweets.day3.ebay.screenname, 
+                             tweets.day3.ebay.isretweet, tweets.day3.ebay.retweeted, 
+                             tweets.day3.ebay.created)
+names(df.day3.ebay) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day3.ebay, file = "ebay_day3.txt", append = TRUE)
+
+
+df.day4.ebay <- data.frame(tweets.day4.ebay.id, tweets.day4.ebay.text, tweets.day4.ebay.screenname,
+                             tweets.day4.ebay.isretweet, tweets.day4.ebay.retweeted, 
+                             tweets.day4.ebay.created)
+names(df.day4.ebay) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day4.ebay, file = "ebay_day4.txt", append = TRUE)
+
+
+df.day5.ebay <- data.frame(tweets.day5.ebay.id, tweets.day5.ebay.text, tweets.day5.ebay.screenname,
+                             tweets.day5.ebay.isretweet,tweets.day5.ebay.retweeted, 
+                             tweets.day5.ebay.created)
+names(df.day5.ebay) <-c("id", "text", "screenname", "isretweet", "retweeted", "created")
+write.table(df.day5.ebay, file = "ebay_day5.txt", append = TRUE)
+
+## these are the files from ReggieNet
+##load opinion lexicon
+##from http://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html#lexicon
+## the load path is relative to the working directory that is set above
+
+pos <- scan("positive-words.txt",what="character",comment.char=";")
+neg <- scan("negative-words.txt",what="character",comment.char=";")
+
+## create corpus
+## these functions from the tm package
+
+tweets.day1.ebay.corpus <- Corpus(VectorSource(tweets.day1.ebay.text))
+tweets.day2.ebay.corpus <- Corpus(VectorSource(tweets.day2.ebay.text))
+tweets.day3.ebay.corpus <- Corpus(VectorSource(tweets.day3.ebay.text))
+tweets.day4.ebay.corpus <- Corpus(VectorSource(tweets.day4.ebay.text))
+tweets.day5.ebay.corpus <- Corpus(VectorSource(tweets.day5.ebay.text))
+
+
+## clean up
+
+tweets.day1.ebay.corpus <- tm_map(tweets.day1.ebay.corpus, tolower) 
+tweets.day1.ebay.corpus <- tm_map(tweets.day1.ebay.corpus, removePunctuation)
+tweets.day1.ebay.corpus <- tm_map(tweets.day1.ebay.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day2.ebay.corpus <- tm_map(tweets.day2.ebay.corpus, tolower) 
+tweets.day2.ebay.corpus <- tm_map(tweets.day2.ebay.corpus, removePunctuation)
+tweets.day2.ebay.corpus <- tm_map(tweets.day2.ebay.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day3.ebay.corpus <- tm_map(tweets.day3.ebay.corpus, tolower) 
+tweets.day3.ebay.corpus <- tm_map(tweets.day3.ebay.corpus, removePunctuation)
+tweets.day3.ebay.corpus <- tm_map(tweets.day3.ebay.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day4.ebay.corpus <- tm_map(tweets.day4.ebay.corpus, tolower) 
+tweets.day4.ebay.corpus <- tm_map(tweets.day4.ebay.corpus, removePunctuation)
+tweets.day4.ebay.corpus <- tm_map(tweets.day4.ebay.corpus, function(x) removeWords(x,stopwords()))
+
+tweets.day5.ebay.corpus <- tm_map(tweets.day5.ebay.corpus, tolower) 
+tweets.day5.ebay.corpus <- tm_map(tweets.day5.ebay.corpus, removePunctuation)
+tweets.day5.ebay.corpus <- tm_map(tweets.day5.ebay.corpus, function(x) removeWords(x,stopwords()))
+
+## split the tweets in the corpus up into individual words
+## lapply iterates over each element in the corpus
+## and applies the strsplit function
+## the splitting argument is the 3rd in the lapply function
+## and is splitting on white space.
+
+corpus.split.day1 <- lapply(tweets.day1.ebay.corpus,strsplit,"\\s+")
+corpus.split.day2 <- lapply(tweets.day2.ebay.corpus,strsplit,"\\s+")
+corpus.split.day3 <- lapply(tweets.day3.ebay.corpus,strsplit,"\\s+")
+corpus.split.day4 <- lapply(tweets.day4.ebay.corpus,strsplit,"\\s+")
+corpus.split.day5 <- lapply(tweets.day5.ebay.corpus,strsplit,"\\s+")
+
+## find matches for the individual words in the two lexicons
+## lapply again, x takes on an element in the corpus
+## at each iteration
+
+matches.day1 <- lapply(corpus.split.day1,function(x) {
+  match.pos.day1 <- match(x[[1]],pos)
+  match.neg.day1 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day1))),length(which(!is.na(match.neg.day1))))
+})
+
+matches.day2 <- lapply(corpus.split.day2,function(x) {
+  match.pos.day2 <- match(x[[1]],pos)
+  match.neg.day2 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day2))),length(which(!is.na(match.neg.day2))))
+})
+
+matches.day3 <- lapply(corpus.split.day1,function(x) {
+  match.pos.day3 <- match(x[[1]],pos)
+  match.neg.day3 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day3))),length(which(!is.na(match.neg.day3))))
+})
+
+matches.day4 <- lapply(corpus.split.day4,function(x) {
+  match.pos.day4 <- match(x[[1]],pos)
+  match.neg.day4 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day4))),length(which(!is.na(match.neg.day4))))
+})
+
+matches.day5 <- lapply(corpus.split.day5,function(x) {
+  match.pos.day5 <- match(x[[1]],pos)
+  match.neg.day5 <- match(x[[1]],neg) 
+  
+  ## return the length of each match vector, non-na 
+  list(length(which(!is.na(match.pos.day5))),length(which(!is.na(match.neg.day5))))
+})
+
+## turn the matches into a matrix
+## one column for positive, one for negative
+
+match.matrix.day1 <- matrix(unlist(matches.day1),nrow=length(matches.day1),ncol=2,byrow=T)
+match.matrix.day2 <- matrix(unlist(matches.day2),nrow=length(matches.day2),ncol=2,byrow=T)
+match.matrix.day3 <- matrix(unlist(matches.day3),nrow=length(matches.day3),ncol=2,byrow=T)
+match.matrix.day4 <- matrix(unlist(matches.day4),nrow=length(matches.day4),ncol=2,byrow=T)
+match.matrix.day5 <- matrix(unlist(matches.day5),nrow=length(matches.day5),ncol=2,byrow=T)
+
+## calculate a simple sentiment score by substracting
+## positive count from negative count
+
+simple.sentiment.day1 <- match.matrix.day1[,1] - match.matrix.day1[,2]
+simple.sentiment.day2 <- match.matrix.day2[,1] - match.matrix.day2[,2]
+simple.sentiment.day3 <- match.matrix.day3[,1] - match.matrix.day3[,2]
+simple.sentiment.day4 <- match.matrix.day4[,1] - match.matrix.day4[,2]
+simple.sentiment.day5 <- match.matrix.day5[,1] - match.matrix.day5[,2]
+
+## histogram of sentiment
+hist(simple.sentiment.day1)
+hist(simple.sentiment.day2)
+hist(simple.sentiment.day3)
+hist(simple.sentiment.day4)
+hist(simple.sentiment.day5)
+
+sum(simple.sentiment.day1)
+sum(simple.sentiment.day2)
+sum(simple.sentiment.day3)
+sum(simple.sentiment.day4)
+sum(simple.sentiment.day5)
+```
+
+<h2>Number of tweets</h2>
+
+Total number of tweets recorded per day is 200.
+
+<h2>Sentiment Histograph for each day</h2>
+
+<b>Day1</b> 
+
+Below is the sentiment histograoh for the day 1: 12-01-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/ebayday1.png)
+
+<b>Day2</b> 
+
+Below is the sentiment histograoh for the day 2: 12-02-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/ebayday2.png)
+
+<b>Day3</b> 
+
+Below is the sentiment histograoh for the day 3: 12-03-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/ebayday3.png)
+
+<b>Day4</b> 
+
+Below is the sentiment histograoh for the day 4: 12-04-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/ebayday4.png)
+
+<b>Day5</b> 
+
+Below is the sentiment histograoh for the day 5: 12-05-2014
+
+![day1_1_12_2014](http://138.87.44.2:8787/files/ebayday5.png)
+
+<h2> Comparison Graph </h2>
+
+```{r eval=TRUE,echo=FALSE,message=FALSE,fig.width=12}
+df <- read.csv("ebay.csv")
+
+df1 <- melt(df, id.vars="Dates")
+
+ggplot(data=df1, aes(x=Dates, y=value, fill=variable)) + geom_bar(stat="identity", position=position_dodge(), colour="black")
+
+df
+```
+
+
+In this assignment, we are extracting the data from twitter to calculate sentiment analysis to compare the stock with sentiment analysis results. The resultant graph is plotted against the current day stock and the sentiment we have calculated for that particular day.
+
+First, we have displayed the histographs containing the sentiment values for the tweets for all the five days. Next we try to compare the final sum sentiment value for each day with the stock price change for that particular day to see if the twitter has predicted correctly.
+
+The above table shows the data for the sum of sentiments for each day and the Stock price change for that respective day. The stock price change values have been calculated as the daily stock price change * 100.
+
+With sentiment analysis we are unable to predict the stock change properly, The graph shows that the sentiment is negative on the first day which means it predicted that the stock price will change decrease , which is a failure, as the stock price for dec 1st was positive for ebay. But for day 2 of our sentiment analysis i.e on dec 2nd the sentiment analysis prediction was right, the sentiment analysis predicted that there will be a rise in the stock price of ebay and there was a rise in the stock price of ebay on that day. Again for day 3 that is, on dec 3rd the prediction was right , so there is an inconsistency in prediting the stock using sentiment analysis for ebay, thus we cannot blindly trust sentiment analysis and predict the stock.     
